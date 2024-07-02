@@ -47,19 +47,9 @@ resource "aws_s3_bucket" "default" {
         apply_server_side_encryption_by_default {
           sse_algorithm = "AES256"
         }
-		dynamic "customer_key" {
-			for_each = var.s3_bucket_customer_key_enabled ? [1] : []
-			content {
-				apply_server_side_encryption_by_default {
-					kms_master_key_id = aws_kms_key.customer_key.arn
-					sse_algorithm     = "aws:kms"
-				}
-			}
-		}
       }
     }
   }
-
 }
 
 resource "aws_iam_role" "default" {
