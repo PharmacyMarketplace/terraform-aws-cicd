@@ -275,21 +275,19 @@ resource "aws_codepipeline" "default" {
   stage {
     name = "Source"
 
-    action {
+	action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "2"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
+      version          = "1"
       output_artifacts = ["code"]
 
       configuration = {
-        OAuthToken           = var.github_oauth_token
-        Owner                = var.repo_owner
-        Repo                 = var.repo_name
-        Branch               = var.branch
-        PollForSourceChanges = false
-	  }
+        ConnectionArn        = "arn:aws:codeconnections:us-east-1:926894882237:connection/8e29a88c-3303-4742-8ebe-46931e526fe3"
+        FullRepositoryId     = "${var.repo_owner}/${var.repo_name}"
+        BranchName           = var.branch
+      }
     }
   }
 
