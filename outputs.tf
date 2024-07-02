@@ -42,3 +42,8 @@ output "codepipeline_arn" {
   description = "CodePipeline ARN"
   value       = join("", aws_codepipeline.default[*].arn)
 }
+
+output "codepipeline_role_id" {
+	description = "CodePipeline Role ID"
+	value = join("", aws_codepipeline.default[*].role_id)
+}
