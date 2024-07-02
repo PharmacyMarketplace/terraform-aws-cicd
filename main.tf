@@ -12,6 +12,13 @@ locals {
   webhook_url     = join("", aws_codepipeline_webhook.default[*].url)
 }
 
+resource "aws_kms_key" "customer_key" {
+  for_each = var.s3_bucket_customer_key_enabled ? [1] : []
+  content {
+  	enable_key_rotation = true
+  }
+}
+
 resource "aws_s3_bucket" "default" {
   #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
@@ -42,6 +49,15 @@ resource "aws_s3_bucket" "default" {
         apply_server_side_encryption_by_default {
           sse_algorithm = "AES256"
         }
+		dynamic "customer_key" {
+			for_each = var.s3_bucket_customer_key_enabled ? [1] : []
+			content {
+				apply_server_side_encryption_by_default {
+					kms_master_key_id = aws_kms_key.customer_key.arn
+					sse_algorithm     = "aws:kms"
+				}
+			}
+		}
       }
     }
   }
@@ -251,29 +267,24 @@ resource "aws_codepipeline" "default" {
   name     = module.this.id
   role_arn = join("", aws_iam_role.default[*].arn)
   tags     = module.this.tags
+  pipeline_type = "V2"
 
   artifact_store {
     location = join("", aws_s3_bucket.default[*].bucket)
     type     = "S3"
   }
 
-  stage {
-    name = "Source"
-
-    action {
-      name             = "Source"
-      category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "1"
-      output_artifacts = ["code"]
-
-      configuration = {
-        OAuthToken           = var.github_oauth_token
-        Owner                = var.repo_owner
-        Repo                 = var.repo_name
-        Branch               = var.branch
-        PollForSourceChanges = var.poll_source_changes
+  trigger {
+    provider_type = "CodeStarSourceConnection"
+    git_configuration {
+      source_action_name = "Source"
+      push {
+        branches {
+          includes = [var.push_branch]
+        }
+        file_paths {
+          includes = [var.change_path]
+        }
       }
     }
   }
