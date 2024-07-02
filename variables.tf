@@ -216,3 +216,7 @@ variable "push_branch" {
   type = string
   default = "develop"
 }
+
+variable "codestar_connection_arn" {
+  type = string
+}

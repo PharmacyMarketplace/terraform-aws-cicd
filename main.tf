@@ -414,3 +414,24 @@ module "github_webhook" {
 
   context = module.this.context
 }
+
+resource "aws_iam_policy" "codestar" {
+  name   = "codestar-policy"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+	{
+		"Effect": "Allow",
+		"Action": "codestar-connections:UseConnection",
+		"Resource": "${var.codestar_connection_arn}"
+	}
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "codestar" {
+  role       = aws_iam_role.default[*].arn
+  policy_arn = aws_iam_policy.codestar.arn
+}
