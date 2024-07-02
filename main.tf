@@ -14,9 +14,7 @@ locals {
 
 resource "aws_kms_key" "customer_key" {
   for_each = var.s3_bucket_customer_key_enabled ? [1] : []
-  content {
-  	enable_key_rotation = true
-  }
+  enable_key_rotation = true
 }
 
 resource "aws_s3_bucket" "default" {
