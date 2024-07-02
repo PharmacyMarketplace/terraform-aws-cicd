@@ -432,6 +432,6 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "codestar" {
-  role       = aws_iam_role.default[*].arn
+  role       = join("", aws_iam_role.default[*].arn)
   policy_arn = aws_iam_policy.codestar.arn
 }
