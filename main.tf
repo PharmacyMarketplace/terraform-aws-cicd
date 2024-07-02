@@ -284,7 +284,7 @@ resource "aws_codepipeline" "default" {
       output_artifacts = ["code"]
 
       configuration = {
-        ConnectionArn        = "arn:aws:codeconnections:us-east-1:926894882237:connection/8e29a88c-3303-4742-8ebe-46931e526fe3"
+        ConnectionArn        = var.codestar_connection_arn
         FullRepositoryId     = "${var.repo_owner}/${var.repo_name}"
         BranchName           = var.branch
       }
