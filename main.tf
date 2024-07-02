@@ -12,11 +12,6 @@ locals {
   webhook_url     = join("", aws_codepipeline_webhook.default[*].url)
 }
 
-resource "aws_kms_key" "customer_key" {
-  for_each = var.s3_bucket_customer_key_enabled ? [1] : []
-  enable_key_rotation = true
-}
-
 resource "aws_s3_bucket" "default" {
   #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
@@ -274,6 +269,27 @@ resource "aws_codepipeline" "default" {
           includes = [var.change_path]
         }
       }
+    }
+  }
+
+  stage {
+    name = "Source"
+
+    action {
+      name             = "Source"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "2"
+      output_artifacts = ["code"]
+
+      configuration = {
+        OAuthToken           = var.github_oauth_token
+        Owner                = var.repo_owner
+        Repo                 = var.repo_name
+        Branch               = var.branch
+        PollForSourceChanges = false
+	  }
     }
   }
 
