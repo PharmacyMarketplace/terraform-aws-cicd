@@ -416,7 +416,7 @@ module "github_webhook" {
 }
 
 resource "aws_iam_policy" "codestar" {
-  name   = "${var.change_path}-${var.branch}-cstr-pol"
+  name   = "${join("", aws_codepipeline.default[*].name)}-cstr-pol"
   policy = <<EOF
 {
   "Version": "2012-10-17",
