@@ -416,7 +416,7 @@ module "github_webhook" {
 }
 
 resource "aws_iam_policy" "codestar" {
-  name   = "codestar-policy"
+  name   = "${var.repo_name}-${var.branch}-codestar-policy"
   policy = <<EOF
 {
   "Version": "2012-10-17",
