@@ -201,3 +201,17 @@ variable "approve_sns_arn" {
   type = string
   default = ""
 }
+
+variable "change_path" {
+  type = string
+  default = ""
+}
+
+variable "push_branch" {
+  type = string
+  default = "develop"
+}
+
+variable "codestar_connection_arn" {
+  type = string
+}
