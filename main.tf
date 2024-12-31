@@ -45,7 +45,6 @@ resource "aws_s3_bucket" "default" {
       }
     }
   }
-
 }
 
 resource "aws_iam_role" "default" {
@@ -251,29 +250,43 @@ resource "aws_codepipeline" "default" {
   name     = module.this.id
   role_arn = join("", aws_iam_role.default[*].arn)
   tags     = module.this.tags
+  pipeline_type = "V2"
 
   artifact_store {
     location = join("", aws_s3_bucket.default[*].bucket)
     type     = "S3"
   }
 
+  trigger {
+    provider_type = "CodeStarSourceConnection"
+    git_configuration {
+      source_action_name = "Source"
+      push {
+        branches {
+          includes = [var.push_branch]
+        }
+        file_paths {
+          includes = [var.change_path]
+        }
+      }
+    }
+  }
+
   stage {
     name = "Source"
 
-    action {
+	action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["code"]
 
       configuration = {
-        OAuthToken           = var.github_oauth_token
-        Owner                = var.repo_owner
-        Repo                 = var.repo_name
-        Branch               = var.branch
-        PollForSourceChanges = var.poll_source_changes
+        ConnectionArn        = var.codestar_connection_arn
+        FullRepositoryId     = "${var.repo_owner}/${var.repo_name}"
+        BranchName           = var.branch
       }
     }
   }
@@ -400,4 +413,25 @@ module "github_webhook" {
   events               = var.github_webhook_events
 
   context = module.this.context
+}
+
+resource "aws_iam_policy" "codestar" {
+  name   = "${join("", aws_codepipeline.default[*].name)}-cstr-pol"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+	{
+		"Effect": "Allow",
+		"Action": "codestar-connections:UseConnection",
+		"Resource": "${var.codestar_connection_arn}"
+	}
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "codestar" {
+  role       = join("", aws_iam_role.default[*].id)
+  policy_arn = aws_iam_policy.codestar.arn
 }
