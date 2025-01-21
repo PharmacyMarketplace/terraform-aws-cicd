@@ -404,9 +404,7 @@ module "github_webhook" {
   version = "0.14.0"
 
   enabled              = local.webhook_enabled
-  github_organization  = var.repo_owner
   github_repositories  = [var.repo_name]
-  github_token         = var.github_webhooks_token
   webhook_url          = local.webhook_url
   webhook_secret       = local.webhook_secret
   webhook_content_type = "json"
