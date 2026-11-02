@@ -12,7 +12,8 @@ variable "elastic_beanstalk_environment_name" {
 
 variable "github_oauth_token" {
   type        = string
-  description = "GitHub Oauth Token"
+  default     = ""
+  description = "Deprecated and ignored (PM-2850). It was copied into every CodeBuild project as a PLAINTEXT `GITHUB_TOKEN` that no buildspec read; the pipeline source uses `codestar_connection_arn`. Kept so existing callers still plan."
 }
 
 variable "github_webhooks_token" {
@@ -193,22 +194,22 @@ variable "website_bucket_acl" {
 }
 
 variable "approve_comment" {
-  type = string
+  type    = string
   default = "Approval needed for deployment"
 }
 
 variable "approve_sns_arn" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "change_path" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "push_branch" {
-  type = string
+  type    = string
   default = "develop"
 }
 
